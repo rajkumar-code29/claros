@@ -244,8 +244,26 @@
             </div>
 
             <div class="sensor-card">
-                <div class="sensor-label">Air Quality Index</div>
-                <div class="sensor-value" id="aqi-value">--</div>
+                <div class="sensor-label">VOC</div>
+                <div class="sensor-value" id="voc-value">--</div>
+                <div class="sensor-unit">PPM</div>
+            </div>
+
+             <div class="sensor-card">
+                <div class="sensor-label">Temperature</div>
+                <div class="sensor-value" id="temp-value">--</div>
+                <div class="sensor-unit">°C</div>
+            </div>
+
+             <div class="sensor-card">
+                <div class="sensor-label">Humidity</div>
+                <div class="sensor-value" id="humidity-value">--</div>
+                <div class="sensor-unit">%</div>
+            </div>
+
+             <div class="sensor-card">
+                <div class="sensor-label">Indoor Air Quality</div>
+                <div class="sensor-value" id="iaq-value">--</div>
                 <div class="sensor-unit">AQI</div>
             </div>
         </div>
@@ -275,28 +293,34 @@
     </footer>
 
     <script>
-        // === TO MAKE THE DATA LIVE, UNCOMMENT THE CODE BELOW AND ADD YOUR KEYS ===
-        
-        /*
-        const channelID = 'YOUR_THINGSPEAK_CHANNEL_ID';
-        const readAPIKey = 'YOUR_THINGSPEAK_READ_API_KEY';
+        const blynkToken = 'mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ';
         
         async function fetchSensorData() {
-            const url = `https://api.thingspeak.com/channels/${channelID}/feeds/last.json?api_key=${readAPIKey}`;
+            const urls = [
+                `https://blynk.cloud/external/api/get?token=${blynkToken}&v1`, // Temp
+                `https://blynk.cloud/external/api/get?token=${blynkToken}&v2`, // Pressure
+                `https://blynk.cloud/external/api/get?token=${blynkToken}&v3`, // Humidity
+                `https://blynk.cloud/external/api/get?token=${blynkToken}&v4`, // IAQ
+                `https://blynk.cloud/external/api/get?token=${blynkToken}&v5`, // CO2
+                `https://blynk.cloud/external/api/get?token=${blynkToken}&v6`  // VOC
+            ];
             
             try {
-                const response = await fetch(url);
-                const data = await response.json();
+                const responses = await Promise.all(urls.map(url => fetch(url)));
+                const values = await Promise.all(responses.map(res => res.text()));
                 
-                // Update the DOM elements with the new values
-                const co2Display = document.getElementById('co2-value');
-                const aqiDisplay = document.getElementById('aqi-value');
-                const statusText = document.querySelector('.live-indicator');
-                
-                if (data.field1 && data.field2) {
-                    co2Display.innerText = Math.round(data.field1);
-                    aqiDisplay.innerText = Math.round(data.field2);
-                    statusText.innerHTML = '<div class="pulse"></div> Receiving Live Data';
+                // Check if the first response is valid data and not an "Invalid Token" error
+                if (!values[0].includes("Invalid")) {
+                    document.getElementById('temp-value').innerText = parseFloat(values[0]).toFixed(1);
+                    document.getElementById('pres-value').innerText = Math.round(parseFloat(values[1]));
+                    document.getElementById('hum-value').innerText = Math.round(parseFloat(values[2]));
+                    document.getElementById('iaq-value').innerText = Math.round(parseFloat(values[3]));
+                    document.getElementById('co2-value').innerText = Math.round(parseFloat(values[4]));
+                    document.getElementById('voc-value').innerText = Math.round(parseFloat(values[5]));
+                    
+                    document.querySelector('.live-indicator').innerHTML = '<div class="pulse"></div> Receiving Live Data';
+                } else {
+                    throw new Error("Invalid Token");
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -304,10 +328,8 @@
             }
         }
 
-        // Fetch immediately, then every 15 seconds
         fetchSensorData();
-        setInterval(fetchSensorData, 15000);
-        */
+        setInterval(fetchSensorData, 5000); 
     </script>
 </body>
 </html>
