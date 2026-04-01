@@ -281,8 +281,8 @@
         </div>
         <div class="contact-box">
             <h3>Get in Touch</h3>
-            <p>Email: founders@claros-tech.com</p>
-            <p>Location: United Kingdom</p>
+            <p>Strath Inspire Claros Team</p>
+            <p>Location: University of Strathclyde</p>
             <br>
             <a href="mailto:founders@claros-tech.com" class="btn">Contact Founders</a>
         </div>
@@ -293,45 +293,42 @@
     </footer>
     <script>
         const blynkToken = 'mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ'; 
-        
-        // Bypassing the global redirect by targeting the regional UK server directly
         const blynkServer = 'lon1.blynk.cloud'; 
         
         async function fetchSensorData() {
             try {
                 const values = [];
                 
-                // Fetch pins one by one to avoid rate limits
                 for (let i = 1; i <= 6; i++) {
-                    const url = `https://${blynkServer}/external/api/get?token=${blynkToken}&v${i}`;
-                    const response = await fetch(url);
+                    // We route the request through a CORS proxy to bypass the browser block
+                    const targetUrl = encodeURIComponent(`https://${blynkServer}/external/api/get?token=${blynkToken}&v${i}`);
+                    const proxyUrl = `https://corsproxy.io/?${targetUrl}`;
                     
-                    if (!response.ok) throw new Error("Network response blocked or failed");
+                    const response = await fetch(proxyUrl);
+                    if (!response.ok) throw new Error("Proxy failed");
                     
                     const textValue = await response.text();
                     values.push(textValue);
                 }
                 
                 if (!values[0].toLowerCase().includes("invalid") && !values[0].toLowerCase().includes("error")) {
-                    
-                    document.getElementById('pres-value').innerText = Math.round(parseFloat(values[0])); // V1
-                    document.getElementById('temp-value').innerText = parseFloat(values[1]).toFixed(1);   // V2
-                    document.getElementById('hum-value').innerText = Math.round(parseFloat(values[2]));   // V3
-                    document.getElementById('iaq-value').innerText = Math.round(parseFloat(values[3]));   // V4
-                    document.getElementById('co2-value').innerText = Math.round(parseFloat(values[4]));   // V5
-                    document.getElementById('voc-value').innerText = Math.round(parseFloat(values[5]));   // V6
+                    document.getElementById('pres-value').innerText = Math.round(parseFloat(values[0]));
+                    document.getElementById('temp-value').innerText = parseFloat(values[1]).toFixed(1);
+                    document.getElementById('hum-value').innerText = Math.round(parseFloat(values[2]));
+                    document.getElementById('iaq-value').innerText = Math.round(parseFloat(values[3]));
+                    document.getElementById('co2-value').innerText = Math.round(parseFloat(values[4]));
+                    document.getElementById('voc-value').innerText = Math.round(parseFloat(values[5]));
                     
                     document.querySelector('.live-indicator').innerHTML = '<div class="pulse"></div> Receiving Live Data';
                 } else {
-                    throw new Error("Blynk returned an error.");
+                    throw new Error("Blynk error.");
                 }
             } catch (error) {
                 console.error("Fetch Error:", error);
-                document.querySelector('.live-indicator').innerHTML = '🔴 Connection Error. Retrying...';
+                document.querySelector('.live-indicator').innerHTML = '🔴 Connection Error.';
             }
         }
 
-        // Fetch immediately, then update every 5 seconds
         fetchSensorData();
         setInterval(fetchSensorData, 5000); 
     </script>
