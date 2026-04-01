@@ -292,26 +292,37 @@
         &copy; 2026 Claros. Simple data. Smarter living.
     </footer>
     <script>
-        const blynkToken = 'mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ'; 
-        const blynkServer = 'lon1.blynk.cloud'; 
+        // Using the exact API GET links you provided, wrapped in the AllOrigins proxy
+        // to completely bypass the browser's CORS security blocks.
         
         async function fetchSensorData() {
+            // Your exact links
+            const urls = [
+                'https://blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V1', // Pressure
+                'https://blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V2', // Temp
+                'https://blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V3', // Humidity
+                'https://blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V4', // IAQ
+                'https://blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V5', // CO2
+                'https://blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V6'  // VOC
+            ];
+            
             try {
                 const values = [];
                 
-                for (let i = 1; i <= 6; i++) {
-                    // We route the request through a CORS proxy to bypass the browser block
-                    const targetUrl = encodeURIComponent(`https://${blynkServer}/external/api/get?token=${blynkToken}&v${i}`);
-                    const proxyUrl = `https://corsproxy.io/?${targetUrl}`;
-                    
+                // Fetch each link one by one through the proxy
+                for (let i = 0; i < urls.length; i++) {
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(urls[i])}`;
                     const response = await fetch(proxyUrl);
+                    
                     if (!response.ok) throw new Error("Proxy failed");
                     
-                    const textValue = await response.text();
-                    values.push(textValue);
+                    // AllOrigins packages the result inside a JSON object under "contents"
+                    const data = await response.json();
+                    values.push(data.contents); 
                 }
                 
-                if (!values[0].toLowerCase().includes("invalid") && !values[0].toLowerCase().includes("error")) {
+                // If the first value is valid data and not an error
+                if (!values[0].toLowerCase().includes("invalid")) {
                     document.getElementById('pres-value').innerText = Math.round(parseFloat(values[0]));
                     document.getElementById('temp-value').innerText = parseFloat(values[1]).toFixed(1);
                     document.getElementById('hum-value').innerText = Math.round(parseFloat(values[2]));
@@ -321,14 +332,15 @@
                     
                     document.querySelector('.live-indicator').innerHTML = '<div class="pulse"></div> Receiving Live Data';
                 } else {
-                    throw new Error("Blynk error.");
+                    throw new Error("Blynk returned an error.");
                 }
             } catch (error) {
                 console.error("Fetch Error:", error);
-                document.querySelector('.live-indicator').innerHTML = '🔴 Connection Error.';
+                document.querySelector('.live-indicator').innerHTML = '🔴 Connection Error. Retrying...';
             }
         }
 
+        // Fetch immediately, then every 5 seconds
         fetchSensorData();
         setInterval(fetchSensorData, 5000); 
     </script>
