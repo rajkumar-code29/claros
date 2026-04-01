@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claros | Simple Data. Smarter Living.</title>
+    <style>
+        /* Base Styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+        }
+        
+        /* Header & Hero */
+        header {
+            background-color: #ffffff;
+            padding: 1rem 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-placeholder {
+            width: 40px;
+            height: 40px;
+            background-color: #0ea5e9;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        /* TODO: Replace the div above with your actual logo image tag like: <img src="your-logo.png" alt="Claros Logo" height="40"> */
+        
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+            color: white;
+        }
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Value Proposition Section */
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            padding: 3rem 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            flex: 1;
+            min-width: 300px;
+        }
+        .feature-card h3 {
+            color: #0ea5e9;
+            margin-top: 0;
+        }
+
+        /* Live Dashboard Section */
+        .dashboard-section {
+            background-color: #ffffff;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        .dashboard-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        .sensor-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 2rem;
+            width: 250px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .value {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #0f172a;
+            margin: 0.5rem 0;
+        }
+        .label {
+            color: #64748b;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        .status {
+            margin-top: 2rem;
+            font-size: 0.875rem;
+            color: #10b981;
+            font-weight: 500;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <div class="logo-placeholder">C</div> 
+            <strong style="font-size: 1.5rem; color: #0f172a;">Claros</strong>
+        </div>
+        <div style="font-weight: 500; color: #64748b;">Simple data. Smarter living.</div>
+    </header>
+
+    <div class="hero">
+        <h1>Revolutionizing Student Accommodation</h1>
+        <p>A simple, low-cost sensor that monitors your room's environment to help you sleep better, study harder, and live healthier.</p>
+    </div>
+
+    <div class="features">
+        <div class="feature-card">
+            <h3>For Students: Your Health Guardian</h3>
+            <p>Invisible factors like poor air quality and inconsistent temperatures cause stress and ruin your sleep. Claros gives you the data you need to manage allergies, improve your focus, and finally get a good night's rest.</p>
+        </div>
+        <div class="feature-card">
+            <h3>For Providers: Surgical Precision</h3>
+            <p>Generate a real-time, room-by-room heat map of your property. Instantly identify which rooms are leaking heat and prioritize retrofitting to target your net-zero spending effectively.</p>
+        </div>
+    </div>
+
+    <div class="dashboard-section">
+        <h2>Live Room Environment</h2>
+        <p style="color: #64748b;">Scanning live data from the Claros sensor.</p>
+        
+        <div class="dashboard-container">
+            <div class="sensor-card">
+                <div class="label">CO2 Level</div>
+                <div class="value" id="co2-value">--</div>
+                <div class="label">PPM</div>
+            </div>
+
+            <div class="sensor-card">
+                <div class="label">Air Quality (AQI)</div>
+                <div class="value" id="aqi-value">--</div>
+                <div class="label">Index</div>
+            </div>
+        </div>
+
+        <div class="status">🟢 System Online | Awaiting Data...</div>
+    </div>
+
+    <footer>
+        &copy; 2026 Claros. All rights reserved. 
+    </footer>
+
+    <script>
+        // When you are ready for live data, uncomment this code and add your keys!
+        
+        /*
+        const channelID = 'YOUR_THINGSPEAK_CHANNEL_ID';
+        const readAPIKey = 'YOUR_THINGSPEAK_READ_API_KEY';
+        
+        async function fetchSensorData() {
+            const url = `https://api.thingspeak.com/channels/${channelID}/feeds/last.json?api_key=${readAPIKey}`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                document.getElementById('co2-value').innerText = data.field1 ? Math.round(data.field1) : "--";
+                document.getElementById('aqi-value').innerText = data.field2 ? Math.round(data.field2) : "--";
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        }
+
+        fetchSensorData();
+        setInterval(fetchSensorData, 15000);
+        */
+    </script>
+</body>
+</html>
