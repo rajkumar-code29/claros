@@ -291,25 +291,31 @@
     <footer>
         &copy; 2026 Claros. Simple data. Smarter living.
     </footer>
-
     <script>
         const blynkToken = 'mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ';
+        // IMPORTANT: Change this to match your web dashboard URL (e.g., lon1.blynk.cloud, ny3.blynk.cloud, fra1.blynk.cloud)
+        // If your dashboard just says blynk.cloud, leave it as blynk.cloud
+        const blynkServer = 'https://blynk.cloud/dashboard/56299/global/devices/1/organization/56299/devices/182773/dashboard'; 
         
         async function fetchSensorData() {
             const urls = [
-                `https://blynk.cloud/external/api/get?token=${blynkToken}&v2`, // Temp
-                `https://blynk.cloud/external/api/get?token=${blynkToken}&v1`, // Pressure
-                `https://blynk.cloud/external/api/get?token=${blynkToken}&v3`, // Humidity
-                `https://blynk.cloud/external/api/get?token=${blynkToken}&v4`, // IAQ
-                `https://blynk.cloud/external/api/get?token=${blynkToken}&v5`, // CO2
-                `https://blynk.cloud/external/api/get?token=${blynkToken}&v6`  // VOC
+                `https://${blynkServer}/external/api/get?token=${blynkToken}&v1`,
+                `https://${blynkServer}/external/api/get?token=${blynkServer}&v2`, // Note: typo in previous prompt, fixed here: &v2 instead of &v2... wait, token=${blynkToken}
+            ];
+            // Let's write the array cleanly:
+            const fetchUrls = [
+                `https://${blynkServer}/external/api/get?token=${blynkToken}&v1`,
+                `https://${blynkServer}/external/api/get?token=${blynkToken}&v2`,
+                `https://${blynkServer}/external/api/get?token=${blynkToken}&v3`,
+                `https://${blynkServer}/external/api/get?token=${blynkToken}&v4`,
+                `https://${blynkServer}/external/api/get?token=${blynkToken}&v5`,
+                `https://${blynkServer}/external/api/get?token=${blynkToken}&v6`
             ];
             
             try {
-                const responses = await Promise.all(urls.map(url => fetch(url)));
+                const responses = await Promise.all(fetchUrls.map(url => fetch(url)));
                 const values = await Promise.all(responses.map(res => res.text()));
                 
-                // Check if the first response is valid data and not an "Invalid Token" error
                 if (!values[0].includes("Invalid")) {
                     document.getElementById('temp-value').innerText = parseFloat(values[0]).toFixed(1);
                     document.getElementById('pres-value').innerText = Math.round(parseFloat(values[1]));
@@ -331,5 +337,6 @@
         fetchSensorData();
         setInterval(fetchSensorData, 5000); 
     </script>
+    
 </body>
 </html>
