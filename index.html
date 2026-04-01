@@ -292,35 +292,28 @@
         &copy; 2026 Claros. Simple data. Smarter living.
     </footer>
     <script>
-        // Your exact token from your Arduino code
         const blynkToken = 'mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ'; 
         
-        // ⚠️ CRITICAL: Look at the URL in your browser when you are logged into your Blynk Web Dashboard. 
-        // If it says something like lon1.blynk.cloud, ny3.blynk.cloud, or blr1.blynk.cloud, 
-        // you MUST change 'blynk.cloud' below to match it exactly!
-        const blynkServer = 'blynk.cloud'; 
+        // Bypassing the global redirect by targeting the regional UK server directly
+        const blynkServer = 'lon1.blynk.cloud'; 
         
         async function fetchSensorData() {
-            const fetchUrls = [
-                `https://${blynkServer}/external/api/get?token=${blynkToken}&v1`, // Pressure
-                `https://${blynkServer}/external/api/get?token=${blynkToken}&v2`, // Temp
-                `https://${blynkServer}/external/api/get?token=${blynkToken}&v3`, // Humidity
-                `https://${blynkServer}/external/api/get?token=${blynkToken}&v4`, // IAQ
-                `https://${blynkServer}/external/api/get?token=${blynkToken}&v5`, // CO2
-                `https://${blynkServer}/external/api/get?token=${blynkToken}&v6`  // VOC
-            ];
-            
             try {
-                const responses = await Promise.all(fetchUrls.map(url => fetch(url)));
-                const values = await Promise.all(responses.map(res => res.text()));
+                const values = [];
                 
-                // Print the raw data to the console so we can see what Blynk is returning
-                console.log("Raw Blynk Data:", values);
+                // Fetch pins one by one to avoid rate limits
+                for (let i = 1; i <= 6; i++) {
+                    const url = `https://${blynkServer}/external/api/get?token=${blynkToken}&v${i}`;
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) throw new Error("Network response blocked or failed");
+                    
+                    const textValue = await response.text();
+                    values.push(textValue);
+                }
                 
-                // If Blynk returns an error message, it usually includes "Invalid" or "error"
                 if (!values[0].toLowerCase().includes("invalid") && !values[0].toLowerCase().includes("error")) {
                     
-                    // Mapped exactly to your Arduino Code
                     document.getElementById('pres-value').innerText = Math.round(parseFloat(values[0])); // V1
                     document.getElementById('temp-value').innerText = parseFloat(values[1]).toFixed(1);   // V2
                     document.getElementById('hum-value').innerText = Math.round(parseFloat(values[2]));   // V3
@@ -330,18 +323,17 @@
                     
                     document.querySelector('.live-indicator').innerHTML = '<div class="pulse"></div> Receiving Live Data';
                 } else {
-                    console.error("Blynk rejected the request:", values[0]);
-                    throw new Error("Blynk returned an error instead of data.");
+                    throw new Error("Blynk returned an error.");
                 }
             } catch (error) {
-                console.error("Network or Fetch Error:", error);
-                document.querySelector('.live-indicator').innerHTML = '🔴 Connection Error. Check console.';
+                console.error("Fetch Error:", error);
+                document.querySelector('.live-indicator').innerHTML = '🔴 Connection Error. Retrying...';
             }
         }
 
-        // Fetch immediately, then every 4 seconds
+        // Fetch immediately, then update every 5 seconds
         fetchSensorData();
-        setInterval(fetchSensorData, 4000); 
+        setInterval(fetchSensorData, 5000); 
     </script>
     
 </body>
