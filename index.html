@@ -292,34 +292,20 @@
         &copy; 2026 Claros. Simple data. Smarter living.
     </footer>
    <script>
+        // REPLACE THIS with the URL you copied from Google Cloud Console!
+        const googleCloudProxyUrl = 'YOUR_GOOGLE_TRIGGER_URL_HERE';
+        
         async function fetchSensorData() {
-            // Bypassing the blynk.cloud redirect block by targeting the physical European server (lon1) directly.
-            // Using the exact capital V parameters from your working links.
-            const urls = [
-                'https://lon1.blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V1', // Pressure
-                'https://lon1.blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V2', // Temp
-                'https://lon1.blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V3', // Humidity
-                'https://lon1.blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V4', // IAQ
-                'https://lon1.blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V5', // CO2
-                'https://lon1.blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V6'  // VOC
-            ];
-            
             try {
-                const values = [];
+                // Your website now asks Google for the data, not Blynk
+                const response = await fetch(googleCloudProxyUrl);
                 
-                // Fetch directly from the regional server one by one
-                for (let i = 0; i < urls.length; i++) {
-                    const response = await fetch(urls[i]);
-                    
-                    if (!response.ok) throw new Error("Network response failed");
-                    
-                    const textValue = await response.text();
-                    values.push(textValue);
-                }
+                if (!response.ok) throw new Error("Google Cloud Function failed");
                 
-                // Check if the first response is an actual number (not an error message)
-                if (!values[0].toLowerCase().includes("invalid") && !values[0].toLowerCase().includes("error")) {
-                    
+                // Google hands back a clean array of the 6 values
+                const values = await response.json();
+                
+                if (!values[0].toLowerCase().includes("invalid")) {
                     document.getElementById('pres-value').innerText = Math.round(parseFloat(values[0]));
                     document.getElementById('temp-value').innerText = parseFloat(values[1]).toFixed(1);
                     document.getElementById('hum-value').innerText = Math.round(parseFloat(values[2]));
@@ -327,14 +313,13 @@
                     document.getElementById('co2-value').innerText = Math.round(parseFloat(values[4]));
                     document.getElementById('voc-value').innerText = Math.round(parseFloat(values[5]));
                     
-                    document.querySelector('.live-indicator').innerHTML = '<div class="pulse"></div> Receiving Live Data';
+                    document.querySelector('.live-indicator').innerHTML = '<div class="pulse"></div> Receiving Live Data (via GCP)';
                 } else {
-                    console.error("Blynk error:", values);
-                    throw new Error("Blynk returned an error instead of data.");
+                    throw new Error("Blynk returned an error to Google.");
                 }
             } catch (error) {
                 console.error("Fetch Error:", error);
-                document.querySelector('.live-indicator').innerHTML = '🔴 Connection Error. Retrying...';
+                document.querySelector('.live-indicator').innerHTML = '🔴 Connection Error.';
             }
         }
 
