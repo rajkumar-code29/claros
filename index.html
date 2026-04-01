@@ -291,38 +291,35 @@
     <footer>
         &copy; 2026 Claros. Simple data. Smarter living.
     </footer>
-    <script>
-        // Using the exact API GET links you provided, wrapped in the AllOrigins proxy
-        // to completely bypass the browser's CORS security blocks.
-        
+   <script>
         async function fetchSensorData() {
-            // Your exact links
+            // Bypassing the blynk.cloud redirect block by targeting the physical European server (lon1) directly.
+            // Using the exact capital V parameters from your working links.
             const urls = [
-                'https://blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V1', // Pressure
-                'https://blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V2', // Temp
-                'https://blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V3', // Humidity
-                'https://blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V4', // IAQ
-                'https://blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V5', // CO2
-                'https://blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V6'  // VOC
+                'https://lon1.blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V1', // Pressure
+                'https://lon1.blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V2', // Temp
+                'https://lon1.blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V3', // Humidity
+                'https://lon1.blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V4', // IAQ
+                'https://lon1.blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V5', // CO2
+                'https://lon1.blynk.cloud/external/api/get?token=mULN0Ho0tyyozk0yARJGst2-ab0hPhHQ&V6'  // VOC
             ];
             
             try {
                 const values = [];
                 
-                // Fetch each link one by one through the proxy
+                // Fetch directly from the regional server one by one
                 for (let i = 0; i < urls.length; i++) {
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(urls[i])}`;
-                    const response = await fetch(proxyUrl);
+                    const response = await fetch(urls[i]);
                     
-                    if (!response.ok) throw new Error("Proxy failed");
+                    if (!response.ok) throw new Error("Network response failed");
                     
-                    // AllOrigins packages the result inside a JSON object under "contents"
-                    const data = await response.json();
-                    values.push(data.contents); 
+                    const textValue = await response.text();
+                    values.push(textValue);
                 }
                 
-                // If the first value is valid data and not an error
-                if (!values[0].toLowerCase().includes("invalid")) {
+                // Check if the first response is an actual number (not an error message)
+                if (!values[0].toLowerCase().includes("invalid") && !values[0].toLowerCase().includes("error")) {
+                    
                     document.getElementById('pres-value').innerText = Math.round(parseFloat(values[0]));
                     document.getElementById('temp-value').innerText = parseFloat(values[1]).toFixed(1);
                     document.getElementById('hum-value').innerText = Math.round(parseFloat(values[2]));
@@ -332,7 +329,8 @@
                     
                     document.querySelector('.live-indicator').innerHTML = '<div class="pulse"></div> Receiving Live Data';
                 } else {
-                    throw new Error("Blynk returned an error.");
+                    console.error("Blynk error:", values);
+                    throw new Error("Blynk returned an error instead of data.");
                 }
             } catch (error) {
                 console.error("Fetch Error:", error);
@@ -340,9 +338,9 @@
             }
         }
 
-        // Fetch immediately, then every 5 seconds
+        // Fetch immediately, then every 4 seconds
         fetchSensorData();
-        setInterval(fetchSensorData, 5000); 
+        setInterval(fetchSensorData, 4000); 
     </script>
     
 </body>
